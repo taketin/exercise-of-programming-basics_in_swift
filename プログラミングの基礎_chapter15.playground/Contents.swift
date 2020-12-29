@@ -1,7 +1,7 @@
 import UIKit
 import XCTest
 
-struct Eki: Equatable {
+struct Eki: Equatable, Hashable {
     let namae: String
     let saitanKyori: Float
     let temaeList: [String]
@@ -385,42 +385,30 @@ Ekikan(kiten: "営団成増", shuten: "和光市", keiyu: "有楽町線", kyori:
 
 
 class Chapter15 {
-    func foldR<T>(lst: [T], f:(T, T) -> T, accumulator: T) -> T {
-        return lst.count > 0 ? foldR(lst: Array(lst.dropFirst()), f: f, accumulator: f(accumulator, lst[0])) : accumulator
-    }
-
     // 問題15.4
-    func saitanWobunri(lst: [Eki]) -> (Eki, [Eki]) {
-        let first = lst[0]
-        let result = lst.dropFirst().filter { first.saitanKyori > $0.saitanKyori }
-        return (lst[0], [])
-    }
-
-    func koushin(ekiP: Eki, lst: [Eki]) -> [Eki] {
-        let result = lst.map { ekiQ in
-            koushin1(ekiP: ekiP, ekiQ: ekiQ)
+    func saitanWobunri(lst: [Eki], result: (Eki?, Set<Eki>) = (nil, [])) -> (Eki?, Set<Eki>) {
+        guard lst.count > 0 else {
+            return result
         }
 
-        let result2: [Eki] = result.compactMap { ekiQ in
-            if ekiQ.saitanKyori != MAXFLOAT {
-                return nil
+        var saitanEki = lst[0]
+        var noSaitanList = result.1
+        if let eki = result.0 {
+            if saitanEki.saitanKyori < eki.saitanKyori {
+                noSaitanList.insert(eki)
             }
-            return ekiQ
-        }
-
-        return result2
-    }
-
-    func koushin1(ekiP: Eki, ekiQ: Eki) -> Eki {
-        let resultLst = global_ekikan_list.compactMap { ekikan -> Eki? in
-            if ekiP.namae == ekikan.kiten && ekiQ.namae == ekikan.shuten {
-                return Eki(namae: ekiQ.namae, saitanKyori: ekikan.kyori, temaeList: [ekiQ.namae,ekiP.namae])
+            else {
+                saitanEki = eki
             }
-
-            return nil
         }
 
-        return resultLst.count > 0 ? resultLst[0] : ekiQ
+        lst.dropFirst().map {
+            if saitanEki.saitanKyori < $0.saitanKyori {
+                noSaitanList.insert($0)
+            }
+        }
+        
+        return saitanWobunri(lst: Array(lst.dropFirst()), result: (saitanEki, noSaitanList))
     }
 
     // 問題15.3 エラトステネスのふるい
@@ -477,14 +465,6 @@ class Chapter15 {
 }
 
 class Chapter15Test: XCTestCase {
-    func testFoldR() {
-        let c = Chapter15()
-
-        XCTAssertEqual(c.foldR(lst: ["春","夏","秋","冬"], f: +, accumulator: ""), "春夏秋冬")
-        XCTAssertEqual(c.foldR(lst: [1,2,3,4], f: +, accumulator: 0), 10)
-        XCTAssertEqual(c.foldR(lst: [1,2,3,4], f: -, accumulator: 0), -10)
-    }
-
     func testSaitanWobunri() {
         let c = Chapter15()
 
@@ -496,34 +476,6 @@ class Chapter15Test: XCTestCase {
         let result = c.saitanWobunri(lst: [eki1,eki2,eki3,eki4])
         XCTAssertEqual(result.0, eki3)
         XCTAssertEqual(result.1, [eki1,eki2,eki4])
-    }
-
-    func testKoushin() {
-        let c = Chapter15()
-
-        let ekimeiLst = [
-            Ekimei(kanji: "新大塚", kana: "しんおおつか", romaji: "shinotsuka", shozoku: "丸ノ内線"),
-            Ekimei(kanji: "東池袋", kana: "ひがしいけぶくろ", romaji: "higasiikebukuro", shozoku: "有楽町線"),
-            Ekimei(kanji: "要町", kana: "かなめちょう", romaji: "kanametyou", shozoku: "有楽町線"),
-        ]
-        let ekiLst = makeEKiList(lst: ekimeiLst)
-        let ekiP = Eki(namae: "池袋", saitanKyori: 0, temaeList: ["池袋"])
-        let resultLst = [
-            Eki(namae: "東池袋", saitanKyori: MAXFLOAT, temaeList: []),
-        ]
-
-        XCTAssertEqual(c.koushin(ekiP: ekiP, lst: ekiLst), resultLst)
-    }
-
-    func testKoushin1() {
-        let c = Chapter15()
-
-        let eki1 = Eki(namae: "小竹向原", saitanKyori: 0, temaeList: ["小竹向原"])
-        let eki2 = Eki(namae: "氷川台", saitanKyori: MAXFLOAT, temaeList: [])
-        let eki3 = Eki(namae: "和光市", saitanKyori: MAXFLOAT, temaeList: [])
-        let result1 = Eki(namae: "氷川台", saitanKyori: 1.5, temaeList: ["氷川台", "小竹向原"])
-        XCTAssertEqual(c.koushin1(ekiP: eki1, ekiQ: eki2), result1)
-        XCTAssertEqual(c.koushin1(ekiP: eki1, ekiQ: eki3), eki3)
     }
 
     func testSieve() {
