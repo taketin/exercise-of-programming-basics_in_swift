@@ -8,6 +8,25 @@ struct Gakusei {
 }
 
 class Chapter14 {
+    // 問題14.6
+    func fac(val: Int) -> Int {
+        let lst = enumerate(val: val)
+        return lst.count == 0 ? 0 : foldR(lst: Array(lst.dropFirst()), f: *, accumulator: lst[0])
+    }
+
+    // 問題14.5
+    func oneToN(val: Int) -> Int {
+        return foldR(lst: enumerate(val: val), f: +, accumulator: 0)
+    }
+
+    func oneToN2(val: Int) -> Int {
+        return enumerate(val: val).reduce(0, +)
+    }
+
+    func enumerate(val: Int, accumulator: [Int] = []) -> [Int] {
+        return val == 0 ? accumulator : enumerate(val: val - 1, accumulator: accumulator + [val])
+    }
+
     // 問題14.4
     func gakuseiSum(lst: [Gakusei]) -> Int {
         let tensuuLst = lst.map { $0.tensuu }
@@ -34,6 +53,33 @@ class Chapter14 {
 }
 
 class Chapter14Test: XCTestCase {
+    func testFuc() {
+        let chapter14 = Chapter14()
+
+        XCTAssertEqual(chapter14.fac(val: 5), 120)
+        XCTAssertEqual(chapter14.fac(val: 10), 3628800)
+        XCTAssertEqual(chapter14.fac(val: 0), 0)
+    }
+
+    func testOneToN() {
+        let chapter14 = Chapter14()
+
+        XCTAssertEqual(chapter14.oneToN(val: 5), 15)
+        XCTAssertEqual(chapter14.oneToN(val: 10), 55)
+        XCTAssertEqual(chapter14.oneToN(val: 0), 0)
+
+        XCTAssertEqual(chapter14.oneToN2(val: 5), 15)
+        XCTAssertEqual(chapter14.oneToN2(val: 10), 55)
+        XCTAssertEqual(chapter14.oneToN2(val: 0), 0)
+    }
+
+    func testEnumerate() {
+        let chapter14 = Chapter14()
+
+        XCTAssertEqual(chapter14.enumerate(val: 5), [5,4,3,2,1])
+        XCTAssertEqual(chapter14.enumerate(val: 10), [10,9,8,7,6,5,4,3,2,1])
+    }
+
     func testGakuseiSum() {
         let chapter14 = Chapter14()
 
