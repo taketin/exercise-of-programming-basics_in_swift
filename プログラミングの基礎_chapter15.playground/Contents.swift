@@ -386,13 +386,13 @@ Ekikan(kiten: "営団成増", shuten: "和光市", keiyu: "有楽町線", kyori:
 
 class Chapter15 {
     // 問題15.4
-    func saitanWobunri(lst: [Eki], result: (Eki?, Set<Eki>) = (nil, [])) -> (Eki?, Set<Eki>) {
+    func saitanWobunri(lst: [Eki], result: (Eki?, [Eki]) = (nil, [])) -> (Eki?, [Eki]) {
         guard lst.count > 0 else {
             return result
         }
 
         var saitanEki = lst[0]
-        var noSaitanList = result.1
+        var noSaitanList = Set(result.1)
         if let eki = result.0 {
             if saitanEki.saitanKyori < eki.saitanKyori {
                 noSaitanList.insert(eki)
@@ -407,8 +407,8 @@ class Chapter15 {
                 noSaitanList.insert($0)
             }
         }
-        
-        return saitanWobunri(lst: Array(lst.dropFirst()), result: (saitanEki, noSaitanList))
+
+        return saitanWobunri(lst: Array(lst.dropFirst()), result: (saitanEki, Array(noSaitanList)))
     }
 
     // 問題15.3 エラトステネスのふるい

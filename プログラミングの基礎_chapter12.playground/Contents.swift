@@ -422,10 +422,7 @@ class Chapter12 {
             return shokikaSeikou ? resultLst : nil
         }
 
-        var copiedLst = ArraySlice(lst)
-        var copiedResultLst = resultLst
-        let eki = copiedLst.popFirst()!
-
+        let eki = lst[0]
         let targetEki: Eki
         var shokikaSeikouFlag = shokikaSeikou
         if kiten == eki.namae {
@@ -434,9 +431,8 @@ class Chapter12 {
         } else {
             targetEki = eki
         }
-        copiedResultLst.append(targetEki)
 
-        return shokika(lst: Array(copiedLst), kiten: kiten, resultLst: copiedResultLst, shokikaSeikou: shokikaSeikouFlag)
+        return shokika(lst: Array(lst.dropFirst()), kiten: kiten, resultLst: resultLst + [targetEki], shokikaSeikou: shokikaSeikouFlag)
     }
 
     // 問題 12.2

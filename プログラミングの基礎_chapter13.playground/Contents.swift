@@ -418,15 +418,30 @@ class Chapter13 {
 
     // 問題13.6
     func koushin1(ekiP: Eki, ekiQ: Eki) -> Eki {
-        let resultLst = global_ekikan_list.compactMap { ekikan -> Eki? in
-            if ekiP.namae == ekikan.kiten && ekiQ.namae == ekikan.shuten {
-                return Eki(namae: ekiQ.namae, saitanKyori: ekikan.kyori, temaeList: [ekiQ.namae,ekiP.namae])
-            }
+        let result: Eki
+        if let kyori = getEkikanKyori(ekimeiKanji1: ekiP.namae, ekimeiKanji2: ekiQ.namae, lst: global_ekikan_list) {
+            result = Eki(namae: ekiQ.namae, saitanKyori: kyori, temaeList: [ekiQ.namae,ekiP.namae])
+        } else {
+            result = ekiQ
+        }
 
+        return result
+    }
+
+    func getEkikanKyori(ekimeiKanji1: String, ekimeiKanji2: String, lst: [Ekikan]) -> Float? {
+        guard lst.count > 0 else {
             return nil
         }
 
-        return resultLst.count > 0 ? resultLst[0] : ekiQ
+        var copiedLst = lst
+        if let ekikan = copiedLst.popLast(),
+           ekikan.kiten == ekimeiKanji1 && ekikan.shuten == ekimeiKanji2
+            || ekikan.shuten == ekimeiKanji1 && ekikan.kiten == ekimeiKanji2
+        {
+            return ekikan.kyori
+        }
+
+        return getEkikanKyori(ekimeiKanji1: ekimeiKanji1, ekimeiKanji2: ekimeiKanji2, lst: copiedLst)
     }
 
     // 問題13.4
@@ -469,15 +484,17 @@ class Chapter13Test: XCTestCase {
             Ekimei(kanji: "新大塚", kana: "しんおおつか", romaji: "shinotsuka", shozoku: "丸ノ内線"),
             Ekimei(kanji: "東池袋", kana: "ひがしいけぶくろ", romaji: "higasiikebukuro", shozoku: "有楽町線"),
             Ekimei(kanji: "要町", kana: "かなめちょう", romaji: "kanametyou", shozoku: "有楽町線"),
+            Ekimei(kanji: "千川", kana: "せんかわ", romaji: "senkawa", shozoku: "有楽町線"),
         ]
         let ekiLst = makeEKiList(lst: ekimeiLst)
         let ekiP = Eki(namae: "池袋", saitanKyori: 0, temaeList: ["池袋"])
         let resultLst = [
-            Eki(namae: "東池袋", saitanKyori: MAXFLOAT, temaeList: []),
+            Eki(namae: "千川", saitanKyori: MAXFLOAT, temaeList: []),
         ]
         listU = []
         let resultLst2 = [
             Eki(namae: "新大塚", saitanKyori: 1.8, temaeList: ["新大塚", "池袋"]),
+            Eki(namae: "東池袋", saitanKyori: 2.0, temaeList: ["東池袋", "池袋"]),
             Eki(namae: "要町", saitanKyori: 1.2, temaeList: ["要町", "池袋"]),
         ]
         XCTAssertEqual(chapter13.koushin(ekiP: ekiP, lst: ekiLst), resultLst)
